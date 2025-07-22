@@ -6,21 +6,23 @@
       "use": "@vercel/node",
       "config": {
         "includeFiles": [
-          "uploads/**",
           "config/**",
           "controllers/**",
           "middlewares/**",
           "models/**",
           "routes/**",
           "utils/**"
-        ]
+        ],
+        "maxLambdaSize": "15mb",
+        "suppressBuildLogs": false
       }
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "index.js"
+      "dest": "index.js",
+      "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
     },
     {
       "src": "/(.*)",
