@@ -74,22 +74,22 @@
 // // Start server
 // const PORT = process.env.PORT || 5000;
 // server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
-require('dotenv').config();
-const serverless = require('serverless-http');
+const express = require("express");
+const cors = require("cors");
+const path = require("path");
+require("dotenv").config();
+const serverless = require("serverless-http");
 
-const connectDB = require('./config/db');
+const connectDB = require("./config/db");
 
-const userRoutes = require('./routes/user.route');
-const adminRoutes = require('./routes/admin.route');
-const unitRoutes = require('./routes/unit.route');
-const leaseRoutes = require('./routes/lease.route');
-const bookingRoutes = require('./routes/booking.route');
-const maintenanceRoutes = require('./routes/maintenance.route');
-const notificationRoutes = require('./routes/notification.route');
-const reviewRoutes = require('./routes/review.route');
+const userRoutes = require("./routes/user.route");
+const adminRoutes = require("./routes/admin.route");
+const unitRoutes = require("./routes/unit.route");
+const leaseRoutes = require("./routes/lease.route");
+const bookingRoutes = require("./routes/booking.route");
+const maintenanceRoutes = require("./routes/maintenance.route");
+const notificationRoutes = require("./routes/notification.route");
+const reviewRoutes = require("./routes/review.route");
 
 // init app
 const app = express();
@@ -98,35 +98,40 @@ const app = express();
 connectDB();
 
 // Middleware
-app.use(cors({
-  origin: ['http://localhost:3000', 'https://your-frontend-domain'], // Edit this
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "https://test-leasemate-frontend.vercel.app/",
+    ], // Edit this
+    credentials: true,
+  })
+);
 app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes
-app.use('/api/users', userRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/units', unitRoutes);
-app.use('/api/leases', leaseRoutes);
-app.use('/api/booking', bookingRoutes);
-app.use('/api/maintenance', maintenanceRoutes);
-app.use('/api/notifications', notificationRoutes);
-app.use('/api/reviews', reviewRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/units", unitRoutes);
+app.use("/api/leases", leaseRoutes);
+app.use("/api/booking", bookingRoutes);
+app.use("/api/maintenance", maintenanceRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/reviews", reviewRoutes);
 
 // Error handling
 app.use((err, req, res, next) => {
   res.status(err.statusCode || 500).json({
-    status: err.statusText || 'ERROR',
-    message: err.message || 'Internal Server Error',
+    status: err.statusText || "ERROR",
+    message: err.message || "Internal Server Error",
     code: err.statusCode || 500,
     data: null,
   });
 });
 
-app.use('*', (req, res) => {
-  res.status(404).json({ message: 'Route not found' });
+app.use("*", (req, res) => {
+  res.status(404).json({ message: "Route not found" });
 });
 
 // Export as serverless
