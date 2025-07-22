@@ -7,16 +7,14 @@ const serverless = require("serverless-http");
 const connectDB = require("./config/db");
 
 // Import all routes
-const routes = [
-  require("./routes/user.route"),
-  require("./routes/admin.route"),
-  require("./routes/unit.route"),
-  require("./routes/lease.route"),
-  require("./routes/booking.route"),
-  require("./routes/maintenance.route"),
-  require("./routes/notification.route"),
-  require("./routes/review.route"),
-];
+const userRoutes = require("./routes/user.route");
+const adminRoutes = require("./routes/admin.route");
+const unitRoutes = require("./routes/unit.route");
+const leaseRoutes = require("./routes/lease.route");
+const bookingRoutes = require("./routes/booking.route");
+const maintenanceRoutes = require("./routes/maintenance.route");
+const notificationRoutes = require("./routes/notification.route");
+const reviewRoutes = require("./routes/review.route");
 
 const app = express();
 
@@ -46,10 +44,10 @@ app.use(
   })
 );
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
-// Static files (ensure 'uploads' folder exists in your project root)
+// Static files
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Health check endpoint
@@ -71,14 +69,14 @@ app.get("/", (req, res) => {
 });
 
 // Register all routes
-app.use("/api/users", routes[0]);
-app.use("/api/admin", routes[1]);
-app.use("/api/units", routes[2]);
-app.use("/api/leases", routes[3]);
-app.use("/api/booking", routes[4]);
-app.use("/api/maintenance", routes[5]);
-app.use("/api/notifications", routes[6]);
-app.use("/api/reviews", routes[7]);
+app.use("/api/users", userRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/units", unitRoutes);
+app.use("/api/leases", leaseRoutes);
+app.use("/api/booking", bookingRoutes);
+app.use("/api/maintenance", maintenanceRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/reviews", reviewRoutes);
 
 // Enhanced error handling
 app.use((err, req, res, next) => {
@@ -100,16 +98,23 @@ app.use("*", (req, res) => {
     availableEndpoints: [
       "/api/users",
       "/api/admin",
-      // List all available endpoints
+      "/api/units",
+      "/api/leases",
+      "/api/booking",
+      "/api/maintenance",
+      "/api/notifications",
+      "/api/reviews",
     ],
     documentation: "All routes require /api prefix",
   });
 });
 
 // Serverless/Local execution
-if (process.env.VERCEL_ENV) {
+if (process.env.VERCEL) {
   module.exports = app;
-  module.exports.handler = serverless(app);
+  module.exports.handler = serverless(app, {
+    binary: ["image/*", "application/pdf", "application/octet-stream"],
+  });
 } else {
   const port = process.env.PORT || 3000;
   const server = app.listen(port, () => {
