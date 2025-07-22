@@ -80,16 +80,16 @@ const path = require('path');
 require('dotenv').config();
 const serverless = require('serverless-http');
 
-const connectDB = require('../config/db');
+const connectDB = require('./config/db');
 
-const userRoutes = require('../routes/user.route');
-const adminRoutes = require('../routes/admin.route');
-const unitRoutes = require('../routes/unit.route');
-const leaseRoutes = require('../routes/lease.route');
-const bookingRoutes = require('../routes/booking.route');
-const maintenanceRoutes = require('../routes/maintenance.route');
-const notificationRoutes = require('../routes/notification.route');
-const reviewRoutes = require('../routes/review.route');
+const userRoutes = require('./routes/user.route');
+const adminRoutes = require('./routes/admin.route');
+const unitRoutes = require('./routes/unit.route');
+const leaseRoutes = require('./routes/lease.route');
+const bookingRoutes = require('./routes/booking.route');
+const maintenanceRoutes = require('./routes/maintenance.route');
+const notificationRoutes = require('./routes/notification.route');
+const reviewRoutes = require('./routes/review.route');
 
 // init app
 const app = express();
