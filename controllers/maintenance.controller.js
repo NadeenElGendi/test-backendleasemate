@@ -2,7 +2,7 @@ const MaintenanceRequest = require('../models/maintenance.model');
 const Unit = require('../models/unit.model');
 const uploadToCloudinary = require('../utils/uploadtoCloudinary');
 const User = require('../models/user.model');
-const { onlineUsers } = require('../socket');
+// const { onlineUsers } = require('../socket');
 const notificationService = require('../services/notification.service');
 
 // إضافة طلب صيانة جديد
@@ -43,7 +43,7 @@ exports.createRequest = async (req, res) => {
     
     console.log('🏠 Unit found:', unit?._id);
     console.log('👤 Landlord ID:', unit?.ownerId);
-    console.log('📡 Online users:', Object.keys(onlineUsers));
+    // console.log('📡 Online users:', Object.keys(onlineUsers));
     
     if (!unit) {
       console.log('⚠️ Unit not found, but continuing with request creation');
@@ -96,16 +96,16 @@ exports.createRequest = async (req, res) => {
 
       // Emit to landlord if online
       try {
-        const landlordSocketId = onlineUsers[unit.ownerId.toString()];
-        console.log('🏠 Landlord socket ID:', landlordSocketId);
-        if (landlordSocketId) {
-          console.log('📡 Emitting to landlord:', landlordSocketId);
-          req.app.get('io').to(landlordSocketId).emit('maintenanceRequestCreated', {
+        // const landlordSocketId = onlineUsers[unit.ownerId.toString()];
+        // console.log('🏠 Landlord socket ID:', landlordSocketId);
+        // if (landlordSocketId) {
+          console.log('📡 Emitting to landlord:', unit.ownerId.toString());
+          req.app.get('io').to(unit.ownerId.toString()).emit('maintenanceRequestCreated', {
             type: 'maintenanceRequestCreated',
             request: request,
             message: 'تم إنشاء طلب صيانة جديد'
           });
-        }
+        // }
       } catch (socketError) {
         console.error('❌ Error emitting to landlord:', socketError);
       }
@@ -113,16 +113,16 @@ exports.createRequest = async (req, res) => {
 
     // Emit to tenant if online
     try {
-      const tenantSocketId = onlineUsers[req.user._id.toString()];
-      console.log('👤 Tenant socket ID:', tenantSocketId);
-      if (tenantSocketId) {
-        console.log('📡 Emitting to tenant:', tenantSocketId);
-        req.app.get('io').to(tenantSocketId).emit('maintenanceRequestCreated', {
+      // const tenantSocketId = onlineUsers[req.user._id.toString()];
+      // console.log('👤 Tenant socket ID:', tenantSocketId);
+      // if (tenantSocketId) {
+        console.log('📡 Emitting to tenant:', req.user._id.toString());
+        req.app.get('io').to(req.user._id.toString()).emit('maintenanceRequestCreated', {
           type: 'maintenanceRequestCreated',
           request: request,
           message: 'تم إرسال طلب الصيانة بنجاح'
         });
-      }
+      // }
     } catch (socketError) {
       console.error('❌ Error emitting to tenant:', socketError);
     }

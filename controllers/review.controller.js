@@ -1,7 +1,7 @@
 const Review = require("../models/review.model");
 const Lease = require("../models/lease.model");
 const User = require("../models/user.model");
-const { analyzeReviewWithOpenAI } = require("../utils/openai");
+// const { analyzeReviewWithOpenAI } = require("../utils/openai");
 
 // POST /api/reviews
 exports.createReview = async (req, res) => {

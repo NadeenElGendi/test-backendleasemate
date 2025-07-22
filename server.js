@@ -9,8 +9,8 @@ const notificationRoutes = require('./routes/notification.route');
 const httpStatusText = require('./utils/httpStatusText');
 const path = require('path');
 const http = require('http');
-const socketIo = require('socket.io');
-const { setupSocket } = require('./socket');
+// const socketIo = require('socket.io');
+// const { setupSocket } = require('./socket');
 const { startLeaseExpiryJob } = require('./utils/leaseExpiryJob');
 const reviewRoutes = require("./routes/review.route");
 const leaseRoutes = require("./routes/lease.route");
@@ -20,21 +20,21 @@ const app = express();
 const server = http.createServer(app);
 
 
-const io = socketIo(server, {
-  cors: {
-    origin: "http://localhost:3000",
-    credentials: true,
-  },
-});
+// const io = socketIo(server, {
+//   cors: {
+//     origin: "http://localhost:3000",
+//     credentials: true,
+//   },
+// });
 
 // setup socket listeners
-setupSocket(io);
+// setupSocket(io);
 
 // start cron jobs and pass `io`
-startLeaseExpiryJob(io);
+startLeaseExpiryJob();
 
 // Attach io to app for controller access
-app.set('io', io);
+app.set('io', null);
 
 connectDB();
 
