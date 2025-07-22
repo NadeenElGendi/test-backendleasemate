@@ -135,5 +135,10 @@ app.use("*", (req, res) => {
 });
 
 // Export as serverless
-module.exports = app;
-module.exports.handler = serverless(app);
+if (process.env.VERCEL) {
+  module.exports = app;
+  module.exports.handler = serverless(app);
+} else {
+  const port = process.env.PORT || 3000;
+  app.listen(port, () => console.log(`Server running on port ${port}`));
+}
