@@ -1,79 +1,3 @@
-// const express = require('express');
-// require('dotenv').config();
-// const cors = require('cors');
-// const connectDB = require('./config/db');
-// const path = require('path');
-// const http = require('http');
-
-// const userRoutes = require('./routes/user.route');
-// const adminRoutes = require('./routes/admin.route');
-// const unitRoutes = require('./routes/unit.route');
-// const leaseRoutes = require('./routes/lease.route');
-// const bookingRoutes = require('./routes/booking.route');
-// const maintenanceRoutes = require('./routes/maintenance.route');
-// const notificationRoutes = require('./routes/notification.route');
-// const reviewRoutes = require('./routes/review.route');
-
-// const { startLeaseExpiryJob } = require('./utils/leaseExpiryJob');
-
-// const app = express();
-// const server = http.createServer(app);
-
-// // === Uncomment when WebSocket is needed ===
-// // const socketIo = require('socket.io');
-// // const { setupSocket } = require('./socket');
-// // const io = socketIo(server, {
-// //   cors: {
-// //     origin: ["http://localhost:3000", "https://your-frontend-domain"],
-// //     credentials: true,
-// //   },
-// // });
-// // setupSocket(io);
-// // app.set('io', io);
-// app.set('io', null);
-
-// // Connect to MongoDB
-// connectDB();
-
-// // Middleware
-// app.use(cors({
-//   origin: ['http://localhost:3000', 'https://your-frontend-domain'], // replace in prod
-//   credentials: true,
-// }));
-// app.use(express.json());
-// app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// // Routes
-// app.use('/api/users', userRoutes);
-// app.use('/api/admin', adminRoutes);
-// app.use('/api/units', unitRoutes);
-// app.use('/api/leases', leaseRoutes);
-// app.use('/api/booking', bookingRoutes);
-// app.use('/api/maintenance', maintenanceRoutes);
-// app.use('/api/notifications', notificationRoutes);
-// app.use('/api/reviews', reviewRoutes);
-
-// // Start scheduled tasks
-// startLeaseExpiryJob();
-
-// // Error handler
-// app.use((err, req, res, next) => {
-//   res.status(err.statusCode || 500).json({
-//     status: err.statusText || 'ERROR',
-//     message: err.message || 'Internal Server Error',
-//     code: err.statusCode || 500,
-//     data: null,
-//   });
-// });
-
-// // 404 handler
-// app.use('*', (req, res) => {
-//   res.status(404).json({ message: 'Route not found' });
-// });
-
-// // Start server
-// const PORT = process.env.PORT || 5000;
-// server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
@@ -82,63 +6,121 @@ const serverless = require("serverless-http");
 
 const connectDB = require("./config/db");
 
-const userRoutes = require("./routes/user.route");
-const adminRoutes = require("./routes/admin.route");
-const unitRoutes = require("./routes/unit.route");
-const leaseRoutes = require("./routes/lease.route");
-const bookingRoutes = require("./routes/booking.route");
-const maintenanceRoutes = require("./routes/maintenance.route");
-const notificationRoutes = require("./routes/notification.route");
-const reviewRoutes = require("./routes/review.route");
+// Import all routes
+const routes = [
+  require("./routes/user.route"),
+  require("./routes/admin.route"),
+  require("./routes/unit.route"),
+  require("./routes/lease.route"),
+  require("./routes/booking.route"),
+  require("./routes/maintenance.route"),
+  require("./routes/notification.route"),
+  require("./routes/review.route"),
+];
 
-// init app
 const app = express();
 
-// Connect to DB
-connectDB();
+// Enhanced DB connection with error handling
+connectDB().catch((err) => {
+  console.error("❌ MongoDB connection error:", err);
+  process.exit(1);
+});
 
-// Middleware
+// Improved CORS configuration
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://test-leasemate-frontend.vercel.app",
+  "https://test-backendleasemate-zeta.vercel.app",
+];
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "https://test-leasemate-frontend.vercel.app/",
-    ], // Edit this
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
+
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Static files (ensure 'uploads' folder exists in your project root)
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Routes
-app.use("/api/users", userRoutes);
-app.use("/api/admin", adminRoutes);
-app.use("/api/units", unitRoutes);
-app.use("/api/leases", leaseRoutes);
-app.use("/api/booking", bookingRoutes);
-app.use("/api/maintenance", maintenanceRoutes);
-app.use("/api/notifications", notificationRoutes);
-app.use("/api/reviews", reviewRoutes);
+// Health check endpoint
+app.get("/", (req, res) => {
+  res.json({
+    status: "API is running",
+    documentation: "All routes are prefixed with /api",
+    endpoints: [
+      "/api/users",
+      "/api/admin",
+      "/api/units",
+      "/api/leases",
+      "/api/booking",
+      "/api/maintenance",
+      "/api/notifications",
+      "/api/reviews",
+    ],
+  });
+});
 
-// Error handling
+// Register all routes
+app.use("/api/users", routes[0]);
+app.use("/api/admin", routes[1]);
+app.use("/api/units", routes[2]);
+app.use("/api/leases", routes[3]);
+app.use("/api/booking", routes[4]);
+app.use("/api/maintenance", routes[5]);
+app.use("/api/notifications", routes[6]);
+app.use("/api/reviews", routes[7]);
+
+// Enhanced error handling
 app.use((err, req, res, next) => {
+  console.error("⚠️ Error:", err.stack);
   res.status(err.statusCode || 500).json({
     status: err.statusText || "ERROR",
     message: err.message || "Internal Server Error",
     code: err.statusCode || 500,
     data: null,
+    timestamp: new Date().toISOString(),
   });
 });
 
+// 404 handler with more details
 app.use("*", (req, res) => {
-  res.status(404).json({ message: "Route not found" });
+  res.status(404).json({
+    message: "Route not found",
+    attemptedPath: req.originalUrl,
+    availableEndpoints: [
+      "/api/users",
+      "/api/admin",
+      // List all available endpoints
+    ],
+    documentation: "All routes require /api prefix",
+  });
 });
 
-// Export as serverless
-if (process.env.VERCEL) {
+// Serverless/Local execution
+if (process.env.VERCEL_ENV) {
   module.exports = app;
   module.exports.handler = serverless(app);
 } else {
   const port = process.env.PORT || 3000;
-  app.listen(port, () => console.log(`Server running on port ${port}`));
+  const server = app.listen(port, () => {
+    console.log(`🚀 Server running on port ${port}`);
+    console.log(`🔗 Try http://localhost:${port}/api/users`);
+  });
+
+  process.on("SIGINT", () => {
+    server.close(() => {
+      console.log("Server closed");
+      process.exit(0);
+    });
+  });
 }
